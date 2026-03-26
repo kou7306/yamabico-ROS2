@@ -9,6 +9,7 @@
 
 #include <ypspur.h>
 
+// cmd_vel → YP-Spur モーター指令、YP-Spur → odom/joint_states/TF を橋渡しするノード
 class BeegoDriver : public rclcpp::Node
 {
 public:
@@ -125,6 +126,7 @@ private:
     js_.velocity.resize(2);
   }
 
+  // ypspur-coordinator と IPC 接続し、速度・加速度リミットを設定する
   bool bringup_ypspur()
   {
     if (Spur_init() <= 0) {
