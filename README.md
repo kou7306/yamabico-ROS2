@@ -116,6 +116,16 @@ sudo usermod -aG dialout $USER
 groups  # dialout が含まれていれば OK
 ```
 
+`dialout` 未設定の場合や、設定後にログアウトしていない場合は、起動前に毎回以下を実行する：
+
+```bash
+# デバイス番号は ls -l /dev/serial/by-id/ で確認
+sudo chmod 777 /dev/ttyACM0  # T-frog
+sudo chmod 777 /dev/ttyACM1  # URG
+```
+
+**注意**: USB を抜き差しすると番号が変わるため、その都度確認すること。
+
 ### 6. リポジトリのクローンとビルド
 
 ```bash
