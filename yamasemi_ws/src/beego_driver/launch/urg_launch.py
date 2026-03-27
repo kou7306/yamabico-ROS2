@@ -17,7 +17,7 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 # 実機の by-id パスに合わせて変更する
-                'serial_port': '/dev/serial/by-id/usb-Hokuyo_Data_Flex_for_USB_URG-Series_URG0-FA-AD0001-0000-if00',
+                'serial_port': '/dev/serial/by-id/usb-Hokuyo_Data_Flex_for_USB_URG-Series_USB_Driver-if00',
                 'frame_id': 'laser',
                 'angle_min': -2.356194,   # -135 deg
                 'angle_max': 2.356194,    #  135 deg
