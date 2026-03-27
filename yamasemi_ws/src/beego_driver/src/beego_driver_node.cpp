@@ -4,13 +4,12 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/transform_listener.h>
 #include <chrono>
 
 #include <ypspur.h>
 
+// cmd_vel → YP-Spur モーター指令、YP-Spur → odom/joint_states/TF を橋渡しするノード
 class BeegoDriver : public rclcpp::Node
 {
 public:
@@ -36,8 +35,15 @@ public:
     RCLCPP_INFO(this->get_logger(), "beego_driver initialized (Hz=%d)", loop_hz_);
   }
 
+  ~BeegoDriver() override
+  {
+    if (ypspur_connected_) {
+      Spur_stop();
+      Spur_free();
+    }
+  }
+
 private:
-  // Parameters
   std::string odom_frame_id_;
   std::string base_frame_id_;
   std::string left_wheel_joint_;
@@ -52,15 +58,14 @@ private:
   bool debug_mode_ = false;
   double dt_ = 0.025;
   double tf_time_offset_ = 0.0;
+  bool ypspur_connected_ = false;
 
-  // ROS interfaces
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr js_pub_;
   rclcpp::TimerBase::SharedPtr loop_timer_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
-  // State
   geometry_msgs::msg::Twist::SharedPtr cmd_vel_ = std::make_shared<geometry_msgs::msg::Twist>();
   sensor_msgs::msg::JointState js_;
   nav_msgs::msg::Odometry odom_;
@@ -121,29 +126,31 @@ private:
     js_.velocity.resize(2);
   }
 
-  void bringup_ypspur()
+  // ypspur-coordinator と IPC 接続し、速度・加速度リミットを設定する
+  bool bringup_ypspur()
   {
-    if (Spur_init() > 0)
-    {
-      RCLCPP_INFO(this->get_logger(), "ypspur connected");
-      Spur_stop();
-      Spur_free();
-      Spur_set_pos_GL(0, 0, 0);
-      Spur_set_vel(liner_vel_lim_);
-      Spur_set_accel(liner_accel_lim_);
-      Spur_set_angvel(angular_vel_lim_);
-      Spur_set_angaccel(angular_accel_lim_);
-    }
-    else
-    {
+    if (Spur_init() <= 0) {
+      ypspur_connected_ = false;
       RCLCPP_WARN(this->get_logger(), "ypspur connection failed");
+      return false;
     }
+
+    RCLCPP_INFO(this->get_logger(), "ypspur connected");
+    Spur_stop();
+    Spur_set_vel(liner_vel_lim_);
+    Spur_set_accel(liner_accel_lim_);
+    Spur_set_angvel(angular_vel_lim_);
+    Spur_set_angaccel(angular_accel_lim_);
+    ypspur_connected_ = true;
+    return true;
   }
 
   void cmd_vel_cb(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
     cmd_vel_ = msg;
-    Spur_vel(msg->linear.x, msg->angular.z);
+    if (ypspur_connected_) {
+      Spur_vel(msg->linear.x, msg->angular.z);
+    }
   }
 
   void publish_joint_states()
@@ -167,13 +174,10 @@ private:
     double x, y, yaw, v, w;
     rclcpp::Time now = this->now();
 
-    if (odom_from_ypspur_)
-    {
+    if (odom_from_ypspur_) {
       Spur_get_pos_GL(&x, &y, &yaw);
       Spur_get_vel(&v, &w);
-    }
-    else
-    {
+    } else {
       v = cmd_vel_->linear.x;
       w = cmd_vel_->angular.z;
       yaw = tf2::getYaw(odom_.pose.pose.orientation) + dt_ * w;
@@ -181,7 +185,6 @@ private:
       y = odom_.pose.pose.position.y + dt_ * v * sinf(yaw);
     }
 
-    // Publish odom topic
     odom_.header.stamp = now;
     odom_.header.frame_id = odom_frame_id_;
     odom_.child_frame_id = base_frame_id_;
@@ -194,9 +197,7 @@ private:
     odom_.twist.twist.angular.z = w;
     odom_pub_->publish(odom_);
 
-    // Publish odom -> base TF
-    if (publish_odom_tf_)
-    {
+    if (publish_odom_tf_) {
       odom_trans_.header.stamp = now + rclcpp::Duration::from_seconds(tf_time_offset_);
       odom_trans_.header.frame_id = odom_frame_id_;
       odom_trans_.child_frame_id = base_frame_id_;
@@ -210,16 +211,23 @@ private:
 
   void loop()
   {
-    if (!YP_get_error_state())
-    {
-      publish_odometry();
-      publish_joint_states();
-    }
-    else
-    {
-      RCLCPP_WARN(this->get_logger(), "ypspur disconnected, attempting reconnect...");
+    if (!ypspur_connected_) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                           "ypspur disconnected, attempting reconnect...");
       bringup_ypspur();
+      return;
     }
+
+    int spur_error = YP_get_error_state();
+    if (spur_error) {
+      RCLCPP_WARN(this->get_logger(), "ypspur error detected: %d", spur_error);
+      ypspur_connected_ = false;
+      bringup_ypspur();
+      return;
+    }
+
+    publish_odometry();
+    publish_joint_states();
   }
 };
 
