@@ -2,7 +2,7 @@
 
 set -eu
 
-# ypspur-coordinator bridge for yamabiko robots
+# ypspur-coordinator bridge for yamabico robots
 # Usage: ypspur_coordinator_bridge <param_file>
 
 PARAM_FILE="${1:-}"

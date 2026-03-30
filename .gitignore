@@ -6,5 +6,15 @@ yamasemi_ws/log/
 __pycache__/
 .claude/
 
+# Slidev（npm install で再生成）
+slides/node_modules/
+
+# ROS 2 ワークスペース
+yamabico_ws/build/
+yamabico_ws/install/
+yamabico_ws/log/
+# 上流リポジトリのクローン（READMEの手順で別途 clone / システムインストール可）
+yamabico_ws/src/yp-spur/
+
 # パラメータファイル
 *.param

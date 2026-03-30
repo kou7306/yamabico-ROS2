@@ -10,10 +10,10 @@
 #include <ypspur.h>
 
 // cmd_vel → YP-Spur モーター指令、YP-Spur → odom/joint_states/TF を橋渡しするノード
-class YamabikoDriver : public rclcpp::Node
+class YamabicoDriver : public rclcpp::Node
 {
 public:
-  YamabikoDriver() : Node("yamabiko_driver")
+  YamabicoDriver() : Node("yamabico_driver")
   {
     read_params();
     reset_params();
@@ -23,19 +23,19 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-        "cmd_vel", 10, std::bind(&YamabikoDriver::cmd_vel_cb, this, std::placeholders::_1));
+        "cmd_vel", 10, std::bind(&YamabicoDriver::cmd_vel_cb, this, std::placeholders::_1));
 
     int loop_ms = 1000 / loop_hz_;
     dt_ = 1.0 / static_cast<double>(loop_hz_);
     loop_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(loop_ms), std::bind(&YamabikoDriver::loop, this));
+        std::chrono::milliseconds(loop_ms), std::bind(&YamabicoDriver::loop, this));
 
     bringup_ypspur();
 
-    RCLCPP_INFO(this->get_logger(), "yamabiko_driver initialized (Hz=%d)", loop_hz_);
+    RCLCPP_INFO(this->get_logger(), "yamabico_driver initialized (Hz=%d)", loop_hz_);
   }
 
-  ~YamabikoDriver() override
+  ~YamabicoDriver() override
   {
     if (ypspur_connected_) {
       Spur_stop();
@@ -234,7 +234,7 @@ private:
 int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<YamabikoDriver>();
+  auto node = std::make_shared<YamabicoDriver>();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;

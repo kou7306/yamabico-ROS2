@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    driver_dir = get_package_share_directory('yamabiko_driver')
+    driver_dir = get_package_share_directory('yamabico_driver')
     driver_param = os.path.join(driver_dir, 'config', 'driver_node.param.yaml')
     ypspur_coordinator_path = os.path.join(driver_dir, 'scripts', 'ypspur_coordinator_bridge')
 
@@ -22,10 +22,10 @@ def generate_launch_description():
                  launch.substitutions.LaunchConfiguration('robot_param')],
             output='screen',
         ),
-        launch.actions.LogInfo(msg='Launching yamabiko_driver node...'),
+        launch.actions.LogInfo(msg='Launching yamabico_driver node...'),
         Node(
-            package='yamabiko_driver',
-            executable='yamabiko_driver',
+            package='yamabico_driver',
+            executable='yamabico_driver',
             output='screen',
             parameters=[driver_param],
         ),

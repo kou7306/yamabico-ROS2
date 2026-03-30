@@ -1,4 +1,4 @@
-# yamabiko-ROS2
+# yamabico-ROS2
 
 山彦ロボット（T-frog motor driver + URG LiDAR）を ROS 2 Humble + YP-Spur で動かすためのワークスペースです。
 
@@ -137,14 +137,14 @@ yamasemi_ws/src/<ドライバパッケージ>/config/<ROBOT>.param
 例：
 
 ```
-yamasemi_ws/src/yamabiko_driver/config/beego.param
+yamasemi_ws/src/yamabico_driver/config/beego.param
 ```
 
 ### 7. リポジトリのクローンとビルド
 
 ```bash
-git clone https://github.com/kou7306/yamabiko.git
-cd yamabiko/yamasemi_ws
+git clone https://github.com/kou7306/yamabico.git
+cd yamabico/yamasemi_ws
 source /opt/ros/humble/setup.bash
 colcon build --packages-select <ドライバパッケージ>
 source install/setup.bash
@@ -180,11 +180,11 @@ ls -l /dev/serial/by-id/
 
 ## 起動
 
-以下すべて `yamabiko/yamasemi_ws` ディレクトリで作業する前提です。
+以下すべて `yamabico/yamasemi_ws` ディレクトリで作業する前提です。
 コマンド中の `<ドライバパッケージ>` と `<ROBOT>.param` は使用するロボットに合わせて置き換えてください。
 
 ```bash
-cd yamabiko/yamasemi_ws
+cd yamabico/yamasemi_ws
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 ```
