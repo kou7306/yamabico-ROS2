@@ -45,7 +45,7 @@ docker compose build
 
 ### 起動
 
-全サービス（ypspur-coordinator, beego_driver, URG）をまとめて起動：
+全サービス（ypspur-coordinator, yamabico_driver, URG）をまとめて起動：
 
 ```bash
 docker compose up
@@ -57,12 +57,12 @@ docker compose up
 
 ```bash
 # ROS 2 がホストにない場合は Docker 経由で実行
-docker compose exec beego_driver \
+docker compose exec yamabico_driver \
   ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
   "{linear: {x: 0.1}, angular: {z: 0.0}}" -1
 
 # 停止
-docker compose exec beego_driver \
+docker compose exec yamabico_driver \
   ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
   "{linear: {x: 0.0}, angular: {z: 0.0}}" -1
 ```
@@ -89,7 +89,7 @@ rviz2
 特定のサービスだけ起動したい場合：
 
 ```bash
-docker compose up ypspur beego_driver  # モーターだけ
+docker compose up ypspur yamabico_driver  # モーターだけ
 docker compose up urg                   # URG だけ
 ```
 
@@ -214,20 +214,20 @@ sudo chmod 777 /dev/ttyACM1  # URG
 ロボットの制御パラメータファイル（`*.param`）はリポジトリに含まれていません。別途配布されたファイルを対応するドライバパッケージの `config/` ディレクトリに配置してください：
 
 ```
-yamasemi_ws/src/<ドライバパッケージ>/config/<ROBOT>.param
+yamabico_ws/src/<ドライバパッケージ>/config/<ROBOT>.param
 ```
 
 例：
 
 ```
-yamasemi_ws/src/yamabico_driver/config/beego.param
+yamabico_ws/src/yamabico_driver/config/beego.param
 ```
 
 ### 7. リポジトリのクローンとビルド
 
 ```bash
 git clone https://github.com/kou7306/yamabico.git
-cd yamabico/yamasemi_ws
+cd yamabico/yamabico_ws
 source /opt/ros/humble/setup.bash
 colcon build --packages-select <ドライバパッケージ>
 source install/setup.bash
@@ -263,11 +263,11 @@ ls -l /dev/serial/by-id/
 
 ## 起動
 
-以下すべて `yamabico/yamasemi_ws` ディレクトリで作業する前提です。
+以下すべて `yamabico/yamabico_ws` ディレクトリで作業する前提です。
 コマンド中の `<ドライバパッケージ>` と `<ROBOT>.param` は使用するロボットに合わせて置き換えてください。
 
 ```bash
-cd yamabico/yamasemi_ws
+cd yamabico/yamabico_ws
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 ```

@@ -7,17 +7,17 @@ services:
       - /dev:/dev
     command: >
       bash -c "
-        /ws/install/beego_driver/share/beego_driver/scripts/ypspur_coordinator_bridge
-        /ws/install/beego_driver/share/beego_driver/config/beego.param
+        /ws/install/yamabico_driver/share/yamabico_driver/scripts/ypspur_coordinator_bridge
+        /ws/install/yamabico_driver/share/yamabico_driver/config/beego.param
       "
     network_mode: host
 
-  # beego_driver ROS2 ノード（モーター制御 + odom）
-  beego_driver:
+  # yamabico_driver ROS2 ノード（モーター制御 + odom）
+  driver:
     build: .
     depends_on:
       - ypspur
-    command: ros2 run beego_driver beego_driver
+    command: ros2 run yamabico_driver yamabico_driver
     network_mode: host
 
   # URG LiDAR ノード
@@ -26,5 +26,5 @@ services:
     privileged: true
     volumes:
       - /dev:/dev
-    command: ros2 launch beego_driver urg_launch.py
+    command: ros2 launch yamabico_driver urg_launch.py
     network_mode: host

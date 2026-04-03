@@ -21,9 +21,9 @@ RUN cd /tmp \
 
 # ワークスペースのコピーとビルド
 WORKDIR /ws
-COPY yamasemi_ws/src /ws/src
+COPY yamabico_ws/src /ws/src
 RUN . /opt/ros/humble/setup.sh \
-    && colcon build --packages-select beego_driver
+    && colcon build --packages-select yamabico_driver
 
 # エントリポイント
 COPY docker-entrypoint.sh /docker-entrypoint.sh
